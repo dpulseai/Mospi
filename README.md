@@ -1,2 +1,0 @@
-# Mospi
-mospi project
