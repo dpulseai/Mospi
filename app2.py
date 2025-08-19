@@ -1,6 +1,11 @@
 """
-MoSPI AI-Powered Smart Survey Tool - Production Ready
-Streamlit application for deployment
+MoSPI AI-Powered Smart Survey Tool - Working Prototype
+Single file working application with OpenAI integration
+
+To run:
+1. pip install streamlit pandas numpy plotly openai
+2. Set your OpenAI API key in the script or as environment variable
+3. streamlit run app.py
 """
 
 import streamlit as st
@@ -22,15 +27,16 @@ try:
     PLOTLY_AVAILABLE = True
 except ImportError:
     PLOTLY_AVAILABLE = False
-    st.warning("📊 Advanced charts not available. Install plotly for full functionality.")
+    st.warning("Plotly not installed. Install with: pip install plotly")
 
 try:
     import openai
     OPENAI_AVAILABLE = True
-    # Get API key from Streamlit secrets or environment
-    openai.api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY", ""))
+    # Set your OpenAI API key here or use environment variable
+    openai.api_key = os.getenv("OPENAI_API_KEY", "your-api-key-here")
 except ImportError:
     OPENAI_AVAILABLE = False
+    st.info("OpenAI not installed. Install with: pip install openai")
 
 # Page configuration
 st.set_page_config(
@@ -39,33 +45,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-# Custom CSS
-st.markdown("""
-<style>
-.main-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 2rem;
-    border-radius: 10px;
-    color: white;
-    margin-bottom: 2rem;
-    text-align: center;
-}
-.metric-card {
-    background: #f8f9fa;
-    padding: 1rem;
-    border-radius: 8px;
-    border-left: 4px solid #667eea;
-}
-.success-banner {
-    background: #d4edda;
-    border: 1px solid #c3e6cb;
-    border-radius: 8px;
-    padding: 1rem;
-    margin: 1rem 0;
-}
-</style>
-""", unsafe_allow_html=True)
 
 # Initialize session state
 if 'initialized' not in st.session_state:
@@ -174,7 +153,7 @@ def classify_occupation(text):
 
 def ai_generate_survey(prompt, use_openai=False):
     """Generate survey using AI or mock"""
-    if use_openai and OPENAI_AVAILABLE and openai.api_key:
+    if use_openai and OPENAI_AVAILABLE and openai.api_key != "your-api-key-here":
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -258,10 +237,21 @@ def calculate_quality_score(responses, duration):
 def main():
     # Header
     st.markdown("""
+    <style>
+    .main-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 10px;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
     <div class="main-header">
         <h1>🇮🇳 MoSPI Smart Survey Tool</h1>
         <p>AI-Powered Survey Platform for National Data Collection</p>
-        <small>Ministry of Statistics and Programme Implementation</small>
     </div>
     """, unsafe_allow_html=True)
     
@@ -276,9 +266,6 @@ def main():
     st.sidebar.markdown("### 📈 Quick Stats")
     st.sidebar.metric("Total Surveys", len(st.session_state.surveys))
     st.sidebar.metric("Total Responses", len(st.session_state.responses))
-    
-    st.sidebar.markdown("---")
-    st.sidebar.info("💡 This is a demonstration of the MoSPI Smart Survey Tool capabilities.")
     
     # Page routing
     if page == "🏠 Home":
@@ -298,67 +285,49 @@ def show_home():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown("""
-        <div class="metric-card">
-        <h3>🤖 AI-Powered</h3>
-        <p>Generate surveys using natural language with GPT integration</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("""
+        ### 🤖 AI-Powered
+        Generate surveys using natural language with GPT integration
+        """)
     
     with col2:
-        st.markdown("""
-        <div class="metric-card">
-        <h3>📱 Multi-Channel</h3>
-        <p>Deploy across Web, Mobile, and messaging platforms</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.success("""
+        ### 📱 Multi-Channel
+        Deploy across Web, Mobile, and messaging platforms
+        """)
     
     with col3:
-        st.markdown("""
-        <div class="metric-card">
-        <h3>🌐 Offline-First</h3>
-        <p>Works without internet with automatic sync</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.warning("""
+        ### 🌐 Offline-First
+        Works without internet with automatic sync
+        """)
     
     st.markdown("---")
     
-    # Feature highlights
-    st.subheader("🌟 Key Features")
-    
-    features = [
-        "📝 **AI Survey Generation** - Create surveys using natural language prompts",
-        "🔍 **Smart Validation** - Real-time data validation and quality scoring", 
-        "📊 **Analytics Dashboard** - Comprehensive reporting and insights",
-        "🎯 **Adaptive Surveys** - Dynamic follow-up questions based on responses",
-        "🏷️ **Auto-Classification** - AI-powered occupation and data categorization",
-        "📱 **Mobile Responsive** - Works seamlessly across all devices"
-    ]
-    
-    for feature in features:
-        st.markdown(feature)
-    
-    st.markdown("---")
-    
-    # Quick demo section
-    st.subheader("🚀 Try the Demo")
-    
-    col1, col2 = st.columns(2)
+    # Quick actions
+    st.subheader("Quick Actions")
+    col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.info("**For Survey Administrators:**\nUse the Survey Builder to create new surveys or view analytics from existing data.")
-        
+        if st.button("📝 Create Survey", use_container_width=True):
+            st.info("Navigate to Survey Builder from the sidebar")
+    
     with col2:
-        st.success("**For Respondents:**\nTake the sample survey to experience the smart features and adaptive questioning.")
+        if st.button("📱 Take Survey", use_container_width=True):
+            st.info("Navigate to Take Survey from the sidebar")
+    
+    with col3:
+        if st.button("📊 View Analytics", use_container_width=True):
+            st.info("Navigate to Analytics from the sidebar")
     
     # Sample data display
     st.markdown("---")
-    st.subheader("📈 Recent Activity")
+    st.subheader("Recent Activity")
     
     activity_data = pd.DataFrame({
         'Time': [datetime.now() - timedelta(minutes=i*15) for i in range(5)],
-        'Action': ['Survey Created', 'Response Submitted', 'Survey Updated', 'Data Validated', 'Report Generated'],
-        'User': ['Admin', 'Respondent', 'Admin', 'System', 'Analyst'],
+        'Action': ['Survey Created', 'Response Submitted', 'Survey Updated', 'Validated', 'Exported'],
+        'User': ['Admin', 'User1', 'Admin', 'System', 'Analyst'],
         'Status': ['✅ Success', '✅ Success', '✅ Success', '⚠️ Warning', '✅ Success']
     })
     
@@ -372,16 +341,19 @@ def show_survey_builder():
     with tab1:
         st.subheader("Generate Survey with AI")
         
-        st.info("💡 Describe your survey needs in natural language and let AI generate appropriate questions.")
-        
         use_openai = st.checkbox("Use OpenAI GPT (requires API key)", value=False)
         
         if use_openai and not OPENAI_AVAILABLE:
-            st.error("OpenAI integration not available. Using mock AI generation.")
+            st.error("Please install openai: pip install openai")
+        
+        if use_openai and openai.api_key == "your-api-key-here":
+            api_key = st.text_input("Enter OpenAI API Key", type="password")
+            if api_key:
+                openai.api_key = api_key
         
         prompt = st.text_area(
             "Describe your survey",
-            placeholder="Example: Create a household survey with demographic and economic questions for rural population assessment",
+            placeholder="Example: Create a household survey with demographic and economic questions",
             height=100
         )
         
@@ -422,8 +394,6 @@ def show_survey_builder():
     
     with tab2:
         st.subheader("Manual Survey Builder")
-        
-        st.info("💡 Build surveys question by question with full control over question types and validation.")
         
         with st.form("add_question"):
             col1, col2 = st.columns(2)
@@ -494,19 +464,15 @@ def show_survey_builder():
         if st.session_state.surveys:
             for sid, survey in st.session_state.surveys.items():
                 with st.expander(f"📋 {survey['name']} (ID: {sid})"):
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.write(f"**Description:** {survey['description']}")
-                        st.write(f"**Questions:** {len(survey['questions'])}")
-                    with col2:
-                        st.write(f"**Created:** {survey['created_at'][:10]}")
-                        st.write(f"**AI Generated:** {'✅' if survey.get('ai_generated') else '❌'}")
+                    st.write(f"**Description:** {survey['description']}")
+                    st.write(f"**Questions:** {len(survey['questions'])}")
+                    st.write(f"**Created:** {survey['created_at']}")
                     
-                    if st.button(f"🗑️ Delete", key=f"del_survey_{sid}"):
+                    if st.button(f"Delete", key=f"del_survey_{sid}"):
                         del st.session_state.surveys[sid]
                         st.rerun()
         else:
-            st.info("No surveys created yet. Use the AI Generator or Manual Builder to create your first survey.")
+            st.info("No surveys created yet")
 
 def show_take_survey():
     st.title("📱 Take Survey")
@@ -515,61 +481,51 @@ def show_take_survey():
     if not st.session_state.verified_user:
         st.subheader("User Verification")
         
-        st.info("💡 In a production environment, this would integrate with government ID systems.")
-        
         col1, col2 = st.columns([2, 1])
         with col1:
-            user_id = st.text_input("Enter User ID (any text for demo)", placeholder="demo_user_123")
+            user_id = st.text_input("Enter User ID (any text for demo)")
         with col2:
-            st.caption("For demo purposes, enter any identifier")
+            st.info("Enter any text to continue")
         
-        if st.button("✅ Verify & Continue", type="primary"):
+        if st.button("Verify & Continue", type="primary"):
             if user_id:
                 st.session_state.verified_user = {
                     "id": generate_id("USER_"),
                     "name": f"User {user_id}",
                     "verified": True
                 }
-                st.success("Verified successfully!")
+                st.success("Verified!")
                 st.rerun()
     else:
         user = st.session_state.verified_user
         
         col1, col2 = st.columns([3, 1])
         with col1:
-            st.success(f"👤 Logged in as: {user['name']}")
+            st.success(f"Logged in as: {user['name']}")
         with col2:
-            if st.button("🚪 Logout"):
+            if st.button("Logout"):
                 st.session_state.verified_user = None
                 st.rerun()
         
         st.markdown("---")
         
         if st.session_state.surveys:
-            st.subheader("Available Surveys")
-            
             survey_names = [s['name'] for s in st.session_state.surveys.values()]
             survey_ids = list(st.session_state.surveys.keys())
             
             selected_idx = st.selectbox(
-                "Select a survey to take",
+                "Select a survey",
                 range(len(survey_names)),
-                format_func=lambda x: f"{survey_names[x]} ({len(st.session_state.surveys[survey_ids[x]]['questions'])} questions)"
+                format_func=lambda x: survey_names[x]
             )
             
             selected_survey_id = survey_ids[selected_idx]
             selected_survey = st.session_state.surveys[selected_survey_id]
             
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Questions", len(selected_survey['questions']))
-            with col2:
-                st.metric("Type", "Adaptive" if selected_survey.get('adaptive') else "Static")
-            with col3:
-                st.metric("Est. Time", "5-10 min")
+            st.info(f"Questions: {len(selected_survey['questions'])}")
             
             if 'current_session' not in st.session_state:
-                if st.button("🚀 Start Survey", type="primary"):
+                if st.button("Start Survey", type="primary"):
                     st.session_state.current_session = {
                         'survey_id': selected_survey_id,
                         'survey': selected_survey,
@@ -591,15 +547,15 @@ def show_take_survey():
                     st.write(f"Question {current_idx + 1} of {len(all_questions)}")
                     
                     question = all_questions[current_idx]
-                    st.subheader(f"Q{current_idx + 1}: {question['text']}")
+                    st.subheader(question['text'])
                     
-                    # Input based on question type
+                    # Input
                     response = None
                     if question['type'] == 'text':
                         response = st.text_input("Your answer", key=f"q_{question['id']}")
                         if question.get('ai_classify') and response:
                             classification = classify_occupation(response)
-                            st.info(f"🏷️ Auto-classification: {classification['category']} (NCO Code: {classification['code']})")
+                            st.info(f"Classification: {classification['category']} (Code: {classification['code']})")
                     
                     elif question['type'] == 'number':
                         validation = question.get('validation', {})
@@ -622,28 +578,28 @@ def show_take_survey():
                     
                     with col1:
                         if current_idx > 0:
-                            if st.button("⬅️ Previous"):
+                            if st.button("Previous"):
                                 session['current_q'] -= 1
                                 st.rerun()
                     
                     with col3:
                         is_last = current_idx == len(all_questions) - 1
-                        if st.button("🏁 Submit" if is_last else "➡️ Next", type="primary"):
+                        if st.button("Submit" if is_last else "Next", type="primary"):
                             if response is not None or not question.get('required'):
                                 session['responses'][question['id']] = response
                                 
-                                # Generate adaptive questions
+                                # Adaptive questions
                                 if session['survey'].get('adaptive') and current_idx == len(session['survey']['questions']) - 1:
                                     adaptive = generate_adaptive_questions(session['responses'])
                                     if adaptive:
                                         session['adaptive_questions'].extend(adaptive)
-                                        st.info(f"🎯 Generated {len(adaptive)} adaptive follow-up questions based on your responses")
+                                        st.info(f"Added {len(adaptive)} follow-up questions")
                                 
                                 if not is_last:
                                     session['current_q'] += 1
                                     st.rerun()
                                 else:
-                                    # Complete survey
+                                    # Complete
                                     duration = (datetime.now() - session['start_time']).total_seconds()
                                     quality = calculate_quality_score(session['responses'], duration)
                                     
@@ -660,176 +616,105 @@ def show_take_survey():
                                     st.session_state.responses.append(response_record)
                                     del st.session_state.current_session
                                     
-                                    st.success("🎉 Survey completed successfully!")
+                                    st.success("Survey completed!")
                                     st.balloons()
                                     
                                     col1, col2 = st.columns(2)
                                     with col1:
-                                        st.metric("Duration", f"{duration:.0f} seconds")
+                                        st.metric("Duration", f"{duration:.0f}s")
                                     with col2:
-                                        st.metric("Quality Score", f"{quality:.1%}")
+                                        st.metric("Quality Score", f"{quality:.2%}")
                             else:
-                                st.warning("⚠️ This question is required. Please provide an answer.")
+                                st.warning("This question is required")
         else:
-            st.warning("No surveys available. Please create a survey first using the Survey Builder.")
+            st.warning("No surveys available")
 
 def show_analytics():
     st.title("📊 Analytics Dashboard")
     
-    # Key metrics
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric("Total Surveys", len(st.session_state.surveys), delta="2 this week")
+        st.metric("Total Surveys", len(st.session_state.surveys))
     with col2:
-        st.metric("Total Responses", len(st.session_state.responses), delta="15 today")
+        st.metric("Total Responses", len(st.session_state.responses))
     with col3:
-        if st.session_state.responses:
-            avg_quality = np.mean([r['quality_score'] for r in st.session_state.responses])
-            st.metric("Avg Quality", f"{avg_quality:.1%}", delta="5% improvement")
-        else:
-            st.metric("Avg Quality", "0%")
+        avg_quality = np.mean([r['quality_score'] for r in st.session_state.responses]) if st.session_state.responses else 0
+        st.metric("Avg Quality", f"{avg_quality:.2%}")
     with col4:
-        if st.session_state.responses:
-            avg_duration = np.mean([r['duration'] for r in st.session_state.responses])
-            st.metric("Avg Duration", f"{avg_duration:.0f}s", delta="-30s faster")
-        else:
-            st.metric("Avg Duration", "0s")
+        avg_duration = np.mean([r['duration'] for r in st.session_state.responses]) if st.session_state.responses else 0
+        st.metric("Avg Duration", f"{avg_duration:.0f}s")
     
-    if st.session_state.responses:
+    if st.session_state.responses and PLOTLY_AVAILABLE:
         st.markdown("---")
         
         df = pd.DataFrame(st.session_state.responses)
         
-        if PLOTLY_AVAILABLE:
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                # Quality distribution
-                fig = px.histogram(df, x='quality_score', title='📈 Quality Score Distribution', 
-                                 nbins=10, color_discrete_sequence=['#667eea'])
-                fig.update_layout(xaxis_title="Quality Score", yaxis_title="Number of Responses")
-                st.plotly_chart(fig, use_container_width=True)
-            
-            with col2:
-                # Duration distribution
-                fig = px.histogram(df, x='duration', title='⏱️ Response Duration Distribution', 
-                                 nbins=10, color_discrete_sequence=['#764ba2'])
-                fig.update_layout(xaxis_title="Duration (seconds)", yaxis_title="Number of Responses")
-                st.plotly_chart(fig, use_container_width=True)
+        # Quality distribution
+        fig = px.histogram(df, x='quality_score', title='Quality Score Distribution', nbins=10)
+        st.plotly_chart(fig, use_container_width=True)
         
         # Response table
         st.subheader("Recent Responses")
-        display_cols = ['id', 'survey_id', 'user_id', 'duration', 'quality_score', 'completed_at']
-        display_df = df[display_cols].copy()
-        display_df['completed_at'] = pd.to_datetime(display_df['completed_at']).dt.strftime('%Y-%m-%d %H:%M')
-        display_df['duration'] = display_df['duration'].round(0).astype(int)
-        display_df['quality_score'] = (display_df['quality_score'] * 100).round(1).astype(str) + '%'
-        
-        st.dataframe(display_df.head(10), use_container_width=True, hide_index=True)
-        
-        # Export functionality
-        if st.button("📥 Export Data"):
-            csv = df.to_csv(index=False)
-            st.download_button(
-                label="Download CSV",
-                data=csv,
-                file_name=f"survey_responses_{datetime.now().strftime('%Y%m%d')}.csv",
-                mime="text/csv"
-            )
+        display_cols = ['id', 'survey_id', 'user_id', 'duration', 'quality_score']
+        st.dataframe(df[display_cols].head(10), use_container_width=True, hide_index=True)
+    elif st.session_state.responses:
+        st.subheader("Response Summary")
+        df = pd.DataFrame(st.session_state.responses)
+        st.dataframe(df.head(10), use_container_width=True, hide_index=True)
     else:
-        st.info("📈 No response data available yet. Complete some surveys to see analytics.")
+        st.info("No responses yet")
 
 def show_validation_demo():
-    st.title("✅ Data Validation Demo")
+    st.title("✅ Validation Demo")
     
-    st.markdown("Test the real-time validation system with sample inputs")
+    st.markdown("Test the validation system with sample data")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("📝 Enter Test Data")
+        st.subheader("Enter Test Data")
         age = st.number_input("Age", 0, 150, 25)
         email = st.text_input("Email", "user@example.com")
-        phone = st.text_input("Phone Number", "9876543210")
+        phone = st.text_input("Phone", "9876543210")
         occupation = st.text_input("Occupation", "Software Engineer")
-        income = st.selectbox("Income Range", ["<10,000", "10,000-25,000", "25,000-50,000", "50,000-1,00,000", ">1,00,000"])
     
     with col2:
-        st.subheader("🔍 Validation Rules")
+        st.subheader("Validation Rules")
         st.code("""
-        Age: 0-120 years ✓
-        Email: Valid format ✓
-        Phone: 10 digits ✓
-        Occupation: AI classification ✓
-        Income: Valid range ✓
+        • Age: 0-120 years
+        • Email: Valid format
+        • Phone: 10 digits
+        • Occupation: AI classification
         """)
-        
-        st.info("💡 The system performs real-time validation to ensure data quality and consistency.")
     
-    if st.button("🔍 Validate All Fields", type="primary"):
+    if st.button("Validate", type="primary"):
         errors = []
-        warnings = []
         
-        # Validate each field
+        # Validate
         if age < 0 or age > 120:
-            errors.append("Age must be between 0-120 years")
-        elif age > 100:
-            warnings.append("Age over 100 - please verify")
+            errors.append("Age must be 0-120")
         
         if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
-            errors.append("Invalid email format")
+            errors.append("Invalid email")
         
         if not re.match(r'^\d{10}$', phone):
-            errors.append("Phone number must be exactly 10 digits")
-        elif phone.startswith('0'):
-            warnings.append("Phone number starts with 0 - unusual format")
+            errors.append("Phone must be 10 digits")
         
-        # AI Classification
+        # Classification
         classification = classify_occupation(occupation)
         
-        # Display results
+        # Results
         st.markdown("---")
-        st.subheader("📊 Validation Results")
         
         if errors:
-            st.error(f"❌ Found {len(errors)} validation errors:")
+            st.error(f"Found {len(errors)} errors:")
             for error in errors:
                 st.write(f"• {error}")
         else:
-            st.success("✅ All validations passed!")
+            st.success("All validations passed!")
         
-        if warnings:
-            st.warning(f"⚠️ {len(warnings)} warnings:")
-            for warning in warnings:
-                st.write(f"• {warning}")
-        
-        # Classification results
-        st.subheader("🏷️ AI Classification Results")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.metric("Occupation Category", classification['category'])
-        with col2:
-            st.metric("NCO Code", classification['code'])
-        with col3:
-            st.metric("Confidence", f"{classification['confidence']:.1%}")
-        
-        # Quality score
-        quality_factors = {
-            "Completeness": 1.0,
-            "Format Validity": 0.0 if errors else 1.0,
-            "Data Consistency": 0.8 if warnings else 1.0,
-            "AI Confidence": classification['confidence']
-        }
-        
-        overall_quality = np.mean(list(quality_factors.values()))
-        
-        st.subheader("📈 Overall Data Quality")
-        st.metric("Quality Score", f"{overall_quality:.1%}")
-        
-        for factor, score in quality_factors.items():
-            st.write(f"• {factor}: {score:.1%}")
+        st.info(f"Occupation Classification: {classification['category']} (Code: {classification['code']})")
 
 if __name__ == "__main__":
     main()
